@@ -7,10 +7,12 @@ const PORT = 4000;
 const allowedOrigins = [
   "http://localhost:3000",
   "http://44.202.126.211",
+  "http://177.226.99.136",
   "https://lozoya.org"
 ];
 
 const socketIO = require('socket.io')(http, {
+  path: '/socket.io',
   cors: {
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {

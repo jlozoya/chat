@@ -14,7 +14,7 @@ services:
       - server
 
   server:
-    build:
-      context: ./server
+    build: ./server
+    container_name: chat-server
     ports:
       - "4000:4000"
