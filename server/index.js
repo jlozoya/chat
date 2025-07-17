@@ -5,7 +5,7 @@ const http = require('http').Server(app);
 const PORT = 4000;
 const socketIO = require('socket.io')(http, {
   cors: {
-    origin: "http://172.31.87.121" // "http://172.31.87.121:3000"
+    origin: "http://44.202.126.211" // "http://44.202.126.211:3000"
   }
 });
 
