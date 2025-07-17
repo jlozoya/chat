@@ -8,3 +8,6 @@ To build and run the application locally with Docker, use the following command:
 docker-compose up --build
 ```
 
+sudo yum install -y certbot
+
+sudo certbot certonly --standalone -d lozoya.org -d www.lozoya.org
