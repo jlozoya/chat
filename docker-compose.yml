@@ -1,16 +1,47 @@
-version: "3.8"
-
 services:
   client:
     build:
       context: ./client
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - server
+    container_name: client
+    restart: always
+    expose:
+      - "80"
+
   server:
     build:
       context: ./server
+    container_name: server
+    restart: always
     ports:
       - "4000:4000"
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    depends_on:
+      - client
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    entrypoint: >
+      sh -c "sleep 10 && 
+      certbot certonly --webroot --webroot-path=/var/lib/letsencrypt 
+      --email fernandolv1995@gmail.com --agree-tos --no-eff-email 
+      -d lozoya.org && 
+      nginx -s reload"
+
+volumes:
+  certbot-etc:
+  certbot-var:

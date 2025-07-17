@@ -3,15 +3,24 @@ import HomePage from './components/HomePage';
 import ChatPage from './components/ChatPage';
 import socketIO from 'socket.io-client';
 
-const socket = socketIO.connect('http://44.202.126.211:4000');
+const getSocketUrl = () => {
+  const hostname = window.location.hostname;
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+
+  return isLocalhost
+    ? 'http://localhost:4000'
+    : 'https://lozoya.org';
+};
+
+const socket = socketIO.connect(getSocketUrl());
 
 function App() {
   return (
     <BrowserRouter>
       <div>
         <Routes>
-          <Route path="/" element={<HomePage socket={socket} />}></Route>
-          <Route path="/chat" element={<ChatPage socket={socket} />}></Route>
+          <Route path="/" element={<HomePage socket={socket} />} />
+          <Route path="/chat" element={<ChatPage socket={socket} />} />
         </Routes>
       </div>
     </BrowserRouter>

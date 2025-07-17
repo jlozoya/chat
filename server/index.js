@@ -3,9 +3,23 @@ const app = express();
 const cors = require("cors");
 const http = require('http').Server(app);
 const PORT = 4000;
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://44.202.126.211",
+  "https://lozoya.org"
+];
+
 const socketIO = require('socket.io')(http, {
   cors: {
-    origin: "http://44.202.126.211" // "http://44.202.126.211:3000"
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST"]
   }
 });
 
