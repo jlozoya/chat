@@ -42,5 +42,5 @@ jobs:
           docker stop chat-client || true && docker rm chat-client || true
           docker stop chat-server || true && docker rm chat-server || true
 
-          docker run -d --name chat-client -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/chat-client
-          docker run -d --name chat-server -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/chat-server
+          docker run -d --name chat-client -p 80:80 ${{ secrets.DOCKER_USERNAME }}/chat-client
+          docker run -d --name chat-server -p 4000:4000 ${{ secrets.DOCKER_USERNAME }}/chat-server
