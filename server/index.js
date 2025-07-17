@@ -5,7 +5,7 @@ const http = require('http').Server(app);
 const PORT = 4000;
 const socketIO = require('socket.io')(http, {
   cors: {
-    origin: "http://localhost:3000"
+    origin: "http://172.31.87.121:3000"
   }
 });
 
@@ -39,7 +39,6 @@ socketIO.on('connection', (socket) => {
 app.get("/api", (req, res) => {
   res.json({message: "Hello"});
 });
-
 
 http.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);

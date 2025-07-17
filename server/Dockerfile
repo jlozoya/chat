@@ -8,4 +8,4 @@ RUN npm install
 COPY . .
 
 EXPOSE 4000
-CMD ["node", "index.js"]  # or app.js, main file
+CMD ["npm", "run", "start"]
