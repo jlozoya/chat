@@ -35,12 +35,24 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          
+
           docker pull ${{ secrets.DOCKER_USERNAME }}/chat-client
           docker pull ${{ secrets.DOCKER_USERNAME }}/chat-server
 
           docker stop chat-client || true && docker rm chat-client || true
           docker stop chat-server || true && docker rm chat-server || true
+          docker stop nginx || true && docker rm nginx || true
 
-          docker run -d --name chat-client -p 80:80 ${{ secrets.DOCKER_USERNAME }}/chat-client
-          docker run -d --name chat-server -p 4000:4000 ${{ secrets.DOCKER_USERNAME }}/chat-server
+          docker network create chat-net || true
+
+          docker run -d --name chat-client --network chat-net ${{ secrets.DOCKER_USERNAME }}/chat-client
+          docker run -d --name chat-server --network chat-net ${{ secrets.DOCKER_USERNAME }}/chat-server
+
+          docker run -d \
+            --name nginx \
+            --network chat-net \
+            -p 80:80 -p 443:443 \
+            -v /etc/nginx/conf.d:/etc/nginx/conf.d \
+            -v /etc/letsencrypt:/etc/letsencrypt \
+            -v /var/www/certbot:/var/www/certbot \
+            nginx
