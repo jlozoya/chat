@@ -2,7 +2,7 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: ["master"]
+    branches: ["master"]   # or 'master' as you use
 
 jobs:
   deploy:
@@ -12,24 +12,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up SSH
+    - name: Set up SSH agent
       uses: webfactory/ssh-agent@v0.5.4
       with:
         ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-    - name: Upload project to EC2
+    - name: Ensure target directory exists on EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-          # Make sure target directory exists
-          mkdir -p /home/ec2-user/chat
-        EOF
+        ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} "mkdir -p /home/ec2-user/chat"
 
-        # Use rsync to efficiently upload and overwrite changes
+    - name: Sync project files to EC2
+      run: |
         rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/chat/
 
-    - name: SSH into EC2 and build project
+    - name: Deploy Docker containers on EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+        ssh -t -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
           cd /home/ec2-user/chat
           docker-compose down
           docker-compose up --build -d
