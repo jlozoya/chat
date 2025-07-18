@@ -24,6 +24,10 @@ jobs:
     - name: Sync project files to EC2
       run: |
         rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/chat/
+    
+    - name: Docker login
+      run: |
+        echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
     - name: Deploy Docker containers on EC2
       run: |
