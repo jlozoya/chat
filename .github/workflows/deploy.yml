@@ -39,4 +39,63 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no bitnami@${{ secrets.LIGHTSAIL_HOST }} '
             if ! command -v rsync >/dev/null 2>&1; then
-              if command -v a
+              if command -v apt-get >/dev/null 2>&1; then
+                sudo apt-get update && sudo apt-get install -y rsync
+              elif command -v yum >/dev/null 2>&1; then
+                sudo yum install -y rsync
+              fi
+            fi
+          '
+
+      - name: Sync files (rsync)
+        run: |
+          rsync -az --delete \
+            --filter=':- .gitignore' \
+            --exclude '.git*' \
+            --exclude '.github' \
+            --rsync-path="mkdir -p /home/bitnami/chat && rsync" \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ bitnami@${{ secrets.LIGHTSAIL_HOST }}:/home/bitnami/chat/
+
+      # Build/Run on the remote host
+      - name: Deploy containers on Lightsail
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          ssh -o StrictHostKeyChecking=no bitnami@${{ secrets.LIGHTSAIL_HOST }} '
+            set -e
+            cd /home/bitnami/chat
+
+            # Pick docker compose CLI
+            if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+              DC="docker compose"
+            elif command -v docker-compose >/dev/null 2>&1; then
+              DC="docker-compose"
+            else
+              echo "docker compose not found"; exit 1
+            fi
+
+            # Try sudo if needed
+            if ! $DC version >/dev/null 2>&1; then
+              DC="sudo $DC"
+            fi
+            if ! docker version >/dev/null 2>&1; then
+              DOCKER="sudo docker"
+            else
+              DOCKER="docker"
+            fi
+
+            # Login to Docker Hub on the remote host if creds are provided
+            if [ -n "${DOCKER_USERNAME}" ] && [ -n "${DOCKER_PASSWORD}" ]; then
+              echo "${DOCKER_PASSWORD}" | $DOCKER login -u "${DOCKER_USERNAME}" --password-stdin || true
+            fi
+
+            # Pull/build and run
+            $DC down || true
+            # If you use images from a registry: $DC pull || true
+            $DC up --build -d
+
+            # Optional: prune old images
+            $DOCKER image prune -f || true
+          '
