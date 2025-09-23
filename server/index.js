@@ -8,7 +8,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://44.202.126.211",
   "http://177.226.99.136",
-  "https://lozoya.org"
+  "https://chat.lozoya.org"
 ];
 
 const socketIO = require('socket.io')(http, {

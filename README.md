@@ -100,6 +100,3 @@ Add:
 ```bash
 0 0 * * * certbot renew --pre-hook "docker stop nginx" --post-hook "docker start nginx"
 ```
-
----
-
