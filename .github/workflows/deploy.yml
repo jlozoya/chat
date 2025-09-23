@@ -4,16 +4,23 @@ on:
   push:
     branches: ["master"]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-lightsail-master
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.5.4
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
 
@@ -23,36 +30,13 @@ jobs:
       - name: Ensure target directory exists on Lightsail
         run: ssh -o StrictHostKeyChecking=no bitnami@${{ secrets.LIGHTSAIL_HOST }} "mkdir -p /home/bitnami/chat"
 
-      - name: Install rsync
+      # Install rsync on the runner (local)
+      - name: Install rsync (runner)
         run: sudo apt-get update && sudo apt-get install -y rsync
 
-      - name: Sync files
-        run: |
-          rsync -az --delete \
-            --exclude '.git*' \
-            --exclude '.github' \
-            --rsync-path="mkdir -p /home/bitnami/chat && rsync" \
-            -e "ssh -o StrictHostKeyChecking=no" \
-            ./ bitnami@${{ secrets.LIGHTSAIL_HOST }}:/home/bitnami/chat/
-
-      - name: Docker login
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      - name: Deploy containers on Lightsail
+      # Ensure rsync exists on the Lightsail box (remote)
+      - name: Ensure rsync on Lightsail (remote)
         run: |
           ssh -o StrictHostKeyChecking=no bitnami@${{ secrets.LIGHTSAIL_HOST }} '
-            set -e
-            cd /home/bitnami/chat
-            # Use docker compose plugin if available, else fallback to docker-compose
-            if command -v docker compose >/dev/null 2>&1; then
-              dc="docker compose"
-            else
-              dc="docker-compose"
-            fi
-            # If docker needs sudo (Bitnami images often do), try with sudo transparently
-            if ! $dc version >/dev/null 2>&1; then
-              dc="sudo $dc"
-            fi
-            $dc down || true
-            $dc up --build -d
-          '
+            if ! command -v rsync >/dev/null 2>&1; then
+              if command -v a
