@@ -23,6 +23,9 @@ jobs:
       - name: Ensure target directory exists on Lightsail
         run: ssh -o StrictHostKeyChecking=no bitnami@${{ secrets.LIGHTSAIL_HOST }} "mkdir -p /home/bitnami/chat"
 
+      - name: Install rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
       - name: Sync files
         run: |
           rsync -avz --delete \
