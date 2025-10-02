@@ -12,6 +12,9 @@ RUN npm run build
 
 # Runtime stage
 FROM nginx:alpine
+# Update packages to reduce vulnerabilities
+RUN apk update && apk upgrade
+
 # Copy the compiled assets (CRA uses build/, Vite often dist/)
 COPY --from=build /app/build /usr/share/nginx/html
 # If you use Vite, swap the previous line for:
@@ -20,5 +23,5 @@ COPY --from=build /app/build /usr/share/nginx/html
 # Custom nginx (serves SPA + proxies /socket.io to server:4000)
 COPY nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 80
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
