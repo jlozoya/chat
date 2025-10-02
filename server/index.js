@@ -26,6 +26,7 @@ const socketIO = require('socket.io')(http, {
 });
 
 app.use(cors());
+app.set('trust proxy', true);
 let users = [];
 
 socketIO.on('connection', (socket) => {
