@@ -9,7 +9,7 @@ const getSocketUrl = () => {
 
   return isLocalhost
     ? 'http://localhost:4000'
-    : 'https://ws.chat.lozoya.org';
+    : 'https://chat.lozoya.org';
 };
 
 const socket = socketIO.connect(getSocketUrl());
